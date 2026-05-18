@@ -253,14 +253,109 @@
     inset: 0;
     width: 100%; height: 100%;
     object-fit: cover;
-    transition: transform 0.6s ease, filter 0.4s ease;
-    filter: brightness(0.85);
+    transition: transform 0.6s ease, filter 0.4s ease, opacity 0.35s ease;
   }
 
-  .card:hover .thumb-wrap img {
-    transform: scale(1.06);
-    filter: brightness(1);
+  .thumb-wrap .img-static {
+    filter: brightness(0.85);
+    opacity: 1;
+    z-index: 1;
   }
+
+  .thumb-wrap .img-anim {
+    filter: brightness(1);
+    opacity: 0;
+    z-index: 2;
+  }
+
+  .card:hover .thumb-wrap .img-static {
+    transform: scale(1.06);
+    filter: brightness(0.4);
+  }
+
+  .card:hover .thumb-wrap .img-anim {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+
+  .thumb-spinner {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+
+  .card:hover .thumb-spinner { opacity: 1; }
+  .card:hover .thumb-spinner.loaded { opacity: 0; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .spinner-ring {
+    width: 28px; height: 28px;
+    border: 2px solid rgba(255,255,255,0.15);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  .preview-label {
+    position: absolute;
+    bottom: 8px; right: 8px;
+    z-index: 4;
+    background: rgba(13,13,13,0.75);
+    border: 1px solid rgba(255,255,255,0.1);
+    backdrop-filter: blur(6px);
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+
+  .card:hover .preview-label { opacity: 1; }
+
+  .longpress-ring {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .longpress-ring svg { width: 56px; height: 56px; transform: rotate(-90deg); }
+
+  .lp-track {
+    fill: none;
+    stroke: rgba(255,255,255,0.15);
+    stroke-width: 3;
+  }
+
+  .lp-progress {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-dasharray: 125.6;
+    stroke-dashoffset: 125.6;
+    transition: stroke-dashoffset linear;
+  }
+
+  .card.pressing .longpress-ring { opacity: 1; }
+  .card.previewing .longpress-ring { opacity: 0; }
 
   .play-btn {
     position: absolute;
@@ -683,12 +778,12 @@
   <div class="filter-bar">
     <span class="filter-label">Filtrar:</span>
     <button class="chip active" onclick="filterTag('todos', this)">Todos</button>
-    <button class="chip" onclick="filterTag('basico', this)">Básico</button>
-    <button class="chip" onclick="filterTag('intermediario', this)">Intermediário</button>
-    <button class="chip" onclick="filterTag('avancado', this)">Avançado</button>
-    <button class="chip" onclick="filterTag('xote', this)">Xote</button>
-    <button class="chip" onclick="filterTag('baiao', this)">Baião</button>
-    <button class="chip" onclick="filterTag('forro', this)">Forró</button>
+    <button class="chip" onclick="filterTag('barto', this)">Bartô</button>
+    <button class="chip" onclick="filterTag('celio', this)">Celio</button>
+    <button class="chip" onclick="filterTag('charles', this)">Charles</button>
+    <button class="chip" onclick="filterTag('gean', this)">Gean</button>
+    <button class="chip" onclick="filterTag('internet', this)">Internet</button>
+    <button class="chip" onclick="filterTag('samuel', this)">Samuel</button>
     <div class="search-wrap">
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
@@ -720,14 +815,14 @@
         <input type="text" id="fUrl" placeholder="https://youtu.be/..." oninput="previewThumb()" />
       </div>
       <div class="field">
-        <label>Categoria</label>
+        <label>Professor</label>
         <select id="fTag">
-          <option value="basico">Básico</option>
-          <option value="intermediario">Intermediário</option>
-          <option value="avancado">Avançado</option>
-          <option value="xote">Xote</option>
-          <option value="baiao">Baião</option>
-          <option value="forro">Forró</option>
+          <option value="barto">Bartô</option>
+          <option value="celio">Celio</option>
+          <option value="charles">Charles</option>
+          <option value="gean">Gean</option>
+          <option value="internet">Internet</option>
+          <option value="samuel">Samuel</option>
         </select>
       </div>
     </div>
@@ -845,8 +940,8 @@ function ytEmbed(id) {
 //  GALLERY
 // ─────────────────────────────────────────────
 const tagLabels = {
-  basico: 'Básico', intermediario: 'Intermediário', avancado: 'Avançado',
-  xote: 'Xote', baiao: 'Baião', forro: 'Forró'
+  barto: 'Bartô', celio: 'Celio', charles: 'Charles',
+  gean: 'Gean', internet: 'Internet', samuel: 'Samuel'
 };
 
 function filterTag(tag, el) {
@@ -880,9 +975,14 @@ function renderGallery() {
   grid.innerHTML = list.map(v => {
     const id = v.ytId || extractYtId(v.url);
     const thumb = id ? ytThumb(id) : '';
-    return `<div class="card" onclick="openModal('${v.id}')">
+    const animSrc = id ? `https://i.ytimg.com/an_webp/${id}/1.webp` : '';
+    return `<div class="card" data-id="${v.id}" data-ytid="${id}">
       <div class="thumb-wrap">
-        ${thumb ? `<img src="${thumb}" alt="${v.title}" loading="lazy">` : ''}
+        ${thumb ? `<img class="img-static" src="${thumb}" alt="${v.title}" loading="lazy">` : ''}
+        ${animSrc ? `<img class="img-anim" src="" data-src="${animSrc}" alt="">` : ''}
+        <div class="thumb-spinner"><div class="spinner-ring"></div></div>
+        <div class="preview-label">prévia</div>
+        <div class="longpress-ring"><svg viewBox="0 0 48 48"><circle class="lp-track" cx="24" cy="24" r="20"/><circle class="lp-progress" cx="24" cy="24" r="20"/></svg></div>
         <div class="tag-badge">${tagLabels[v.tag] || v.tag}</div>
         <div class="play-btn">
           <div class="play-circle">
@@ -901,6 +1001,7 @@ function renderGallery() {
       </div>
     </div>`;
   }).join('');
+  wireCards();
 }
 
 // ─────────────────────────────────────────────
@@ -1043,6 +1144,111 @@ function showToast(msg, type = 'success') {
   el.className = `show ${type}`;
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { el.className = ''; }, 3000);
+}
+
+// ─────────────────────────────────────────────
+//  ANIMATED PREVIEW
+// ─────────────────────────────────────────────
+function loadAnim(card, cb) {
+  const img = card.querySelector('.img-anim');
+  if (!img) return cb && cb();
+  if (img.src && img.src !== window.location.href) return cb && cb();
+  const spinner = card.querySelector('.thumb-spinner');
+  const src = img.dataset.src;
+  if (!src) return cb && cb();
+  const preload = new Image();
+  preload.onload = () => {
+    img.src = src;
+    if (spinner) spinner.classList.add('loaded');
+    cb && cb();
+  };
+  preload.onerror = () => {
+    if (spinner) spinner.classList.add('loaded');
+    cb && cb();
+  };
+  preload.src = src;
+}
+
+function activatePreview(card) {
+  card.classList.add('previewing');
+  if (navigator.vibrate) navigator.vibrate(40);
+}
+
+function deactivatePreview(card) {
+  card.classList.remove('previewing');
+}
+
+// ─────────────────────────────────────────────
+//  CARD EVENTS — wired after renderGallery
+// ─────────────────────────────────────────────
+const LONG_PRESS_MS = 480;
+
+function wireCards() {
+  document.querySelectorAll('.card').forEach(card => {
+    const id = card.dataset.id;
+    let pressTimer = null;
+    let didLongPress = false;
+    let pressing = false;
+
+    // ── DESKTOP ──
+    card.addEventListener('mouseenter', () => {
+      loadAnim(card, () => activatePreview(card));
+    });
+    card.addEventListener('mouseleave', () => {
+      deactivatePreview(card);
+    });
+    card.addEventListener('click', () => {
+      openModal(id);
+    });
+
+    // ── MOBILE ──
+    card.addEventListener('touchstart', e => {
+      didLongPress = false;
+      pressing = true;
+      card.classList.add('pressing');
+
+      const ring = card.querySelector('.lp-progress');
+      if (ring) {
+        ring.style.transition = `stroke-dashoffset ${LONG_PRESS_MS}ms linear`;
+        ring.style.strokeDashoffset = '0';
+      }
+
+      pressTimer = setTimeout(() => {
+        didLongPress = true;
+        card.classList.remove('pressing');
+        loadAnim(card, () => activatePreview(card));
+      }, LONG_PRESS_MS);
+    }, { passive: true });
+
+    const cancelPress = () => {
+      pressing = false;
+      clearTimeout(pressTimer);
+      card.classList.remove('pressing');
+      const ring = card.querySelector('.lp-progress');
+      if (ring) {
+        ring.style.transition = 'stroke-dashoffset 0.15s ease';
+        ring.style.strokeDashoffset = '125.6';
+      }
+    };
+
+    card.addEventListener('touchend', e => {
+      cancelPress();
+      if (didLongPress) {
+        // long press already handled — second tap dismisses preview or opens modal
+        if (card.classList.contains('previewing')) {
+          deactivatePreview(card);
+        } else {
+          openModal(id);
+        }
+      } else {
+        openModal(id);
+      }
+      didLongPress = false;
+    });
+
+    card.addEventListener('touchmove', cancelPress, { passive: true });
+    card.addEventListener('touchcancel', cancelPress);
+  });
 }
 
 // ─────────────────────────────────────────────
